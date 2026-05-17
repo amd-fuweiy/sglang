@@ -193,3 +193,15 @@ drun -p 30000:30000 \
 ### Warmup Step
 
 When the server displays `The server is fired up and ready to roll!`, it means the startup is successful.
+
+### Install torch_memory_saver
+
+```shell
+ENV HIPCC_COMPILE_FLAGS_APPEND="--amdgpu-target=gfx90a;gfx942 -D__HIP_PLATFORM_AMD__"
+ENV CFLAGS="-D__HIP_PLATFORM_AMD__"
+ENV CXXFLAGS="-D__HIP_PLATFORM_AMD__"
+
+RUN pip install "git+https://github.com/fzyzcjy/torch_memory_saver.git"
+```
+
+
