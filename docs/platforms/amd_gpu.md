@@ -114,6 +114,16 @@ The steps below show how to build and use an image.
 
 With your AMD system properly configured and SGLang installed, you can now fully leverage AMD hardware to power SGLang’s machine learning capabilities.
 
+## Install torch_memory_saver
+
+```shell
+ENV HIPCC_COMPILE_FLAGS_APPEND="--amdgpu-target=gfx90a;gfx942 -D__HIP_PLATFORM_AMD__"
+ENV CFLAGS="-D__HIP_PLATFORM_AMD__"
+ENV CXXFLAGS="-D__HIP_PLATFORM_AMD__"
+
+RUN pip install "git+https://github.com/fzyzcjy/torch_memory_saver.git"
+```
+
 ## Quantization on AMD GPUs
 
 The [Quantization documentation](../advanced_features/quantization.md#platform-compatibility) has a full compatibility matrix. The short version: FP8, AWQ, MXFP4, W8A8, GPTQ, compressed-tensors, Quark, and **petit_nvfp4** (NVFP4 on ROCm via [Petit](https://github.com/causalflow-ai/petit-kernel)) all work on AMD. Methods that depend on Marlin or NVIDIA-specific kernels (`awq_marlin`, `gptq_marlin`, `gguf`, `modelopt_fp8`, `modelopt_fp4`) do not.
@@ -194,14 +204,5 @@ drun -p 30000:30000 \
 
 When the server displays `The server is fired up and ready to roll!`, it means the startup is successful.
 
-### Install torch_memory_saver
-
-```shell
-ENV HIPCC_COMPILE_FLAGS_APPEND="--amdgpu-target=gfx90a;gfx942 -D__HIP_PLATFORM_AMD__"
-ENV CFLAGS="-D__HIP_PLATFORM_AMD__"
-ENV CXXFLAGS="-D__HIP_PLATFORM_AMD__"
-
-RUN pip install "git+https://github.com/fzyzcjy/torch_memory_saver.git"
-```
 
 
