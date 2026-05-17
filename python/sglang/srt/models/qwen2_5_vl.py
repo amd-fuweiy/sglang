@@ -845,6 +845,10 @@ class Qwen2_5_VLForConditionalGeneration(nn.Module):
                     self.config.encoder_only or self.config.language_only
                 ) and name not in params_dict:
                     continue
+                if name not in params_dict:
+                    # Some checkpoints may carry visual projection aliases not present
+                    # in this runtime graph; skip them to keep loading robust.
+                    continue
                 param = params_dict[name]
                 weight_loader = param.weight_loader
                 weight_loader(param, loaded_weight, shard_id)

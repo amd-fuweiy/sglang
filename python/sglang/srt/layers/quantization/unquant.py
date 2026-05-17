@@ -63,8 +63,9 @@ if _is_npu:
 try:
     from flashinfer.fused_moe import cutlass_fused_moe as flashinfer_cutlass_fused_moe
     from flashinfer.fused_moe.core import ActivationType
-except ImportError:
+except Exception:
     flashinfer_cutlass_fused_moe = None
+    ActivationType = None
 
 
 class UnquantizedEmbeddingMethod(QuantizeMethodBase):
@@ -170,7 +171,9 @@ class UnquantizedFusedMoEMethod(FusedMoEMethodBase, MultiPlatformOp):
         use_deep_gemm: bool = False,
     ):
         super().__init__()
-        self.use_flashinfer_cutlass = get_moe_runner_backend().is_flashinfer_cutlass()
+        self.use_flashinfer_cutlass = (
+            get_moe_runner_backend().is_flashinfer_cutlass() and flashinfer_cutlass_fused_moe is not None
+        )
         self.use_triton_kernels = use_triton_kernels
         self.with_bias = False
         self.use_flashinfer_trtllm_moe = use_flashinfer_trtllm_moe

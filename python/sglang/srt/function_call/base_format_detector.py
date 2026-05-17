@@ -9,7 +9,7 @@ from partial_json_parser.core.options import Allow
 
 try:
     from xgrammar import StructuralTag, get_model_structural_tag
-except ImportError:
+except Exception:
     StructuralTag = Any
     get_model_structural_tag = None
 

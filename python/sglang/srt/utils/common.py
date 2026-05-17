@@ -3527,8 +3527,11 @@ def mxfp_supported():
     Returns whether the current platform supports MX types.
     """
     if torch.version.hip:
-        gcn_arch = torch.cuda.get_device_properties(0).gcnArchName
-        return any(gfx in gcn_arch for gfx in ["gfx95"])
+        try:
+            gcn_arch = torch.cuda.get_device_properties(0).gcnArchName
+            return any(gfx in gcn_arch for gfx in ["gfx95"])
+        except RuntimeError:
+            return False
     else:
         return False
 
@@ -3539,8 +3542,11 @@ def is_gfx95_supported():
     Returns whether the current platform supports MX types.
     """
     if torch.version.hip:
-        gcn_arch = torch.cuda.get_device_properties(0).gcnArchName
-        return any(gfx in gcn_arch for gfx in ["gfx95"])
+        try:
+            gcn_arch = torch.cuda.get_device_properties(0).gcnArchName
+            return any(gfx in gcn_arch for gfx in ["gfx95"])
+        except RuntimeError:
+            return False
     else:
         return False
 

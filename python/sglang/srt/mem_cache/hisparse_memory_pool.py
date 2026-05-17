@@ -26,7 +26,16 @@ logger = logging.getLogger(__name__)
 _is_cuda = is_cuda()
 _is_hip = is_hip()
 if _is_cuda or _is_hip:
-    from sgl_kernel.kvcacheio import transfer_kv_all_layer_mla
+    try:
+        from sgl_kernel.kvcacheio import transfer_kv_all_layer_mla
+    except Exception:
+
+        def transfer_kv_all_layer_mla(*args, **kwargs):
+            raise RuntimeError(
+                "HiSparse device KV transfer requires sgl_kernel.kvcacheio (CUDA/ROCm). "
+                "It is not available in this process."
+            )
+
 else:
 
     def transfer_kv_all_layer_mla(*args, **kwargs):

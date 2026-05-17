@@ -132,7 +132,10 @@ def use_rowwise_torch_scaled_mm():
         # torch._scaled_mm rowwise feature.
         # The condition is determined once as the operations
         # are time consuming.
-        return get_device_capability() >= (9, 4) and torch_release >= (2, 7)
+        major, minor = get_device_capability()
+        if major is None or minor is None:
+            return False
+        return (major, minor) >= (9, 4) and torch_release >= (2, 7)
     return False
 
 

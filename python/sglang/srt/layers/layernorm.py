@@ -113,6 +113,31 @@ if _is_npu:
     from sgl_kernel_npu.norm.add_rmsnorm_bias import add_gemma_rms_norm
 
 
+def _call_vllm_fused_add_rms_norm_compat(
+    out: torch.Tensor,
+    x: torch.Tensor,
+    residual_out: torch.Tensor,
+    residual: torch.Tensor,
+    weight: torch.Tensor,
+    epsilon: float,
+) -> None:
+    """Compat wrapper for vLLM fused_add_rms_norm API drift on ROCm.
+
+    Newer builds expose a 6-arg out-of-place style API:
+      fused_add_rms_norm(out, x, residual_out, residual, weight, epsilon)
+    Older ROCm builds expose a 4-arg in-place API:
+      fused_add_rms_norm(x, residual, weight, epsilon)
+    """
+    try:
+        fused_add_rms_norm(out, x, residual_out, residual, weight, epsilon)
+    except TypeError as e:
+        if "takes 4 positional arguments" not in str(e):
+            raise
+        fused_add_rms_norm(x, residual, weight, epsilon)
+        out.copy_(x)
+        residual_out.copy_(residual)
+
+
 def _forward_with_allreduce_fusion(
     norm_module,
     x: torch.Tensor,
@@ -330,8 +355,13 @@ class RMSNorm(MultiPlatformOp):
             residual_out = torch.empty_like(x)
             if post_residual_addition is not None:
                 residual = residual + post_residual_addition
-            fused_add_rms_norm(
-                out, x, residual_out, residual, self.weight.data, self.variance_epsilon
+            _call_vllm_fused_add_rms_norm_compat(
+                out,
+                x,
+                residual_out,
+                residual,
+                self.weight.data,
+                self.variance_epsilon,
             )
             return out, residual_out
         out = torch.empty_like(x)
@@ -655,7 +685,7 @@ class GemmaRMSNorm(MultiPlatformOp):
                 residual_out = torch.empty_like(x)
                 if post_residual_addition is not None:
                     residual = residual + post_residual_addition
-                fused_add_rms_norm(
+                _call_vllm_fused_add_rms_norm_compat(
                     out, x, residual_out, residual, w, self.variance_epsilon
                 )
                 return out, residual_out

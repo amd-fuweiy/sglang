@@ -31,10 +31,11 @@ if TYPE_CHECKING:
     from sglang.srt.speculative.eagle_info import EagleVerifyInput
 
 
-if _is_cuda:
-    from sgl_kernel import fast_topk
-elif _is_hip:
-    from sgl_kernel import fast_topk
+if _is_cuda or _is_hip:
+    try:
+        from sgl_kernel import fast_topk
+    except (ImportError, RuntimeError, OSError):
+        from sglang.srt.utils.common import fast_topk
 else:
     from sglang.srt.utils.common import fast_topk
 
